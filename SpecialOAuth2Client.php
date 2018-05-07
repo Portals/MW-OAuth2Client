@@ -142,22 +142,54 @@ class SpecialOAuth2Client extends SpecialPage {
 	protected function _userHandling( $response ) {
 		global $wgOAuth2Client, $wgAuth, $wgRequest;
 
-		$username = $response['user'][$wgOAuth2Client['configuration']['username']];
-		$email = $response['user'][$wgOAuth2Client['configuration']['email']];
+		$data = $response;
+
+		$username = $data[$wgOAuth2Client['configuration']['username']];
+		$email = $data[$wgOAuth2Client['configuration']['email']];
+		$groups = $data[$wgOAuth2Client['configuration']['groups']];
+		$nick = $data[$wgOAuth2Client['configuration']['nick']];
+
+		$allowedGroups = $wgOAuth2Client['configuration']['allowed_groups'];
+
+		$allowed = false;
+
+		foreach($groups as $group){
+			foreach($allowedGroups as $allowedGroup){
+				if($group == $allowedGroup){
+					$allowed = true;
+				}
+			}
+
+			if($allowed){
+				break;
+			}
+		}
+
+		if(!$allowed){
+			echo("Ledsen, du har inte åtkomst hit. Om du tror att du borde ha det, skicka ett mail till dig@chalmers.it <br>");
+
+			echo("<br> <br> <br> Debuginfo som du kan skicka till digIT: ");
+
+			echo("<br> Allowed:");
+			print_r($allowedGroups);
+			echo("<br> Groups:");
+			print_r($groups);
+			echo("<br> Nick: " . $nick);
+
+			exit();
+		}
 
 		$user = User::newFromName($username, 'creatable');
 		if (!$user) {
 			throw new MWException('Could not create user with username:' . $username);
 			die();
 		}
-		$user->setRealName($username);
+
+		$user->setRealName($nick);
 		$user->setEmail($email);
 		$user->load();
 		if ( !( $user instanceof User && $user->getId() ) ) {
 			$user->addToDatabase();
-			// MediaWiki recommends below code instead of addToDatabase to create user but it seems to fail.
-			// $authManager = MediaWiki\Auth\AuthManager::singleton();
-			// $authManager->autoCreateUser( $user, MediaWiki\Auth\AuthManager::AUTOCREATE_SOURCE_SESSION );
 			$user->confirmEmail();
 		}
 		$user->setToken();
