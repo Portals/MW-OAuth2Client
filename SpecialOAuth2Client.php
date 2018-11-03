@@ -166,7 +166,7 @@ class SpecialOAuth2Client extends SpecialPage {
 		}
 
 		if(!$allowed){
-			echo("Ledsen, du har inte åtkomst hit. Om du tror att du borde ha det, skicka ett mail till dig@chalmers.it <br>");
+			echo("Ledsen, du har inte åtkomst hit. Om du tror att du borde ha det, skicka ett mail till digit@chalmers.it <br>");
 
 			echo("<br> <br> <br> Debuginfo som du kan skicka till digIT: ");
 
